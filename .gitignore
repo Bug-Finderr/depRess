@@ -1,0 +1,39 @@
+# Binaries for programs and plugins
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+*.test
+*.out
+
+# Go module cache and workspace files
+go.sum
+go.work
+go.work.sum
+
+# Code coverage and test artifacts
+*.coverprofile
+coverage.*
+profile.cov
+
+# Build output directories
+bin/
+pkg/
+
+# Editor
+.idea/
+.vscode/
+
+# Swap, backup, and temp files
+*.swp
+*.bak
+*.log
+tmp/
+
+# OS-generated files
+.DS_Store
+Thumbs.db
+
+# And obviously
+.env
