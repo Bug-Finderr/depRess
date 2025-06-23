@@ -46,8 +46,10 @@ func FindBestVersion(available []string, constraint string) (string, error) {
 func filterVersions(versions []string, c *semver.Constraints) semver.Collection {
 	var matching semver.Collection
 	for _, v := range versions {
-		if ver, err := semver.NewVersion(v); err == nil && c.Check(ver) {
-			matching = append(matching, ver)
+		if ver, err := semver.NewVersion(v); err == nil {
+			if c == nil || c.Check(ver) {
+				matching = append(matching, ver)
+			}
 		}
 	}
 	return matching
