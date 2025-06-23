@@ -1,0 +1,12 @@
+{
+  "name": "test-complex-project",
+  "version": "1.0.0",
+  "dependencies": {
+    "@radix-ui/react-slot": "^1.2.3",
+    "react": "19.1.0",
+    "react-dom": "19.1.0"
+  },
+  "devDependencies": {
+    "typescript": "5.0.0"
+  }
+}
