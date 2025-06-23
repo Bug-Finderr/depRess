@@ -18,8 +18,8 @@ type PackageInfo struct {
 }
 
 type PackageVersions struct {
-	Version      string   `json:"version"`
-	Dependencies []string `json:"dependencies"`
+	Version      string            `json:"version"`
+	Dependencies map[string]string `json:"dependencies"`
 }
 
 type Client struct {

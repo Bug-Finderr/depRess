@@ -1,6 +1,7 @@
 package main
 
 import (
+	"depRess/internal/resolver"
 	"flag"
 	"fmt"
 	"os"
@@ -32,6 +33,15 @@ func main() {
 	fmt.Printf("Package.json: %s\n", *filePath)
 	fmt.Printf("Max Depth: %d\n", *maxDepth)
 	fmt.Println(strings.Repeat("-", 60))
+
+	res := resolver.New(*maxDepth)
+
+	if err := res.ResolveDeps(*filePath); err != nil {
+		fmt.Printf("Error during resolution: %v\n", err)
+		os.Exit(1)
+	}
+
+	res.GenReport()
 }
 
 func demo() {
