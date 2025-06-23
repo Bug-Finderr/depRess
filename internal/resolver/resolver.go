@@ -96,7 +96,9 @@ func (r *Resolver) ResolveDeps(path string) error {
 		}
 
 		if err := r.resolveSinglePackage(item.Name, item.Constraint, item.Depth); err != nil {
-			fmt.Printf("Error resolving %s: %v\n", item.Name, err)
+			if err.Error() != "already resolved" {
+				fmt.Printf("Error resolving %s: %v\n", item.Name, err)
+			}
 		}
 	}
 

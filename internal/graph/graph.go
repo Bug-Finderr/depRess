@@ -75,40 +75,29 @@ func (g *Graph) DetectCycles() [][]string {
 	stack := make(map[string]bool)
 	var cycles [][]string
 
-	var dfs func(string, []string) bool // remove panic
-	dfs = func(node string, path []string) bool {
+	var dfs func(string, []string) // remove panic
+	dfs = func(node string, path []string) {
 		if stack[node] {
-			start := -1
-
 			for i, p := range path {
 				if p == node {
-					start = i
-					break
+					cycles = append(cycles, append(path[i:], node))
+					return
 				}
 			}
-
-			if start != -1 {
-				cycles = append(cycles, append(path[start:], node))
-			}
-
-			return true
 		}
 
 		if visited[node] {
-			return false
+			return
 		}
 
 		visited[node] = true
 		stack[node] = true
 
 		for _, nb := range g.Edges[node] {
-			if dfs(nb, append(path, node)) {
-				return true
-			}
+			dfs(nb, append(path, node))
 		}
 
 		stack[node] = false
-		return false
 	}
 
 	for id := range g.Nodes {
@@ -121,12 +110,11 @@ func (g *Graph) DetectCycles() [][]string {
 }
 
 func (g *Graph) TopoSort() []string {
-	inDegreeCopy := maps.Clone(g.InDegree)
-	var q []string
-	var ans []string
+	inDegree := maps.Clone(g.InDegree)
+	var q, ans []string
 
 	for id := range g.Nodes {
-		if inDegreeCopy[id] == 0 {
+		if inDegree[id] == 0 {
 			q = append(q, id)
 		}
 	}
@@ -137,8 +125,8 @@ func (g *Graph) TopoSort() []string {
 		ans = append(ans, cur)
 
 		for _, nb := range g.Edges[cur] {
-			inDegreeCopy[nb]--
-			if inDegreeCopy[nb] == 0 {
+			inDegree[nb]--
+			if inDegree[nb] == 0 {
 				q = append(q, nb)
 			}
 		}
