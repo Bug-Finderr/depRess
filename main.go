@@ -9,9 +9,9 @@ import (
 )
 
 func main() {
-	filePath := flag.String("f", "package.json", "Path to package.json file")
-	maxDepth := flag.Int("d", 3, "Maximum dependency resolution depth (1-5)")
-	help := flag.Bool("h", false, "Show help message")
+	filePath := flag.String("file", "package.json", "Path to package.json file")
+	maxDepth := flag.Int("depth", 3, "Maximum dependency resolution depth (1-5)")
+	help := flag.Bool("help", false, "Show help message")
 	flag.Parse()
 
 	if *help {

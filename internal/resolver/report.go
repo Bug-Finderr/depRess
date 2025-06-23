@@ -41,11 +41,11 @@ func (r *Resolver) GenReport() {
 	}
 
 	fmt.Println("\nINSTALLATION ORDER (Topological Sort):")
-	installOrder := r.graph.TopoSort()
+	sorted := r.graph.TopoSort()
 
-	if len(installOrder) == len(r.graph.Nodes) {
+	if len(sorted) == len(r.graph.Nodes) {
 		fmt.Println("   Valid installation order found:")
-		for i, packageID := range installOrder {
+		for i, packageID := range sorted {
 			if node, exists := r.graph.Nodes[packageID]; exists {
 				depthIndicator := strings.Repeat("  ", node.Depth)
 				fmt.Printf("   %2d. %s%s\n", i+1, depthIndicator, packageID)
