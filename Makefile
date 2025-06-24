@@ -1,6 +1,6 @@
 BUILD_DIR=./bin
 
-.PHONY: build clean run deps help
+.PHONY: build clean run deps docker-build docker-run docker-clean help
 
 build:
 	mkdir -p $(BUILD_DIR)
@@ -23,15 +23,25 @@ docker-build:
 docker-run:
 	docker run --rm -v $(PWD):/output depres $(if $(file),-file $(file)) $(if $(depth),-depth $(depth)) $(if $(viz),-viz)
 
+docker-clean:
+	docker rmi depres || true
+
 help:
 	@echo "Available targets:"
-	@echo "  build      - Build the binary"
-	@echo "  clean      - Clean build artifacts"
-	@echo "  run        - Build and run the application with optional flags:"
-	@echo "                file=<path>  (Path to package.json, default: package.json)"
-	@echo "                depth=<number> (Dependency resolution depth, default: 3)"
-	@echo "                viz          (Generate graphviz DOT file)"
-	@echo "  deps       - Install dependencies"
-	@echo "  help       - Show this help message"
+	@echo "  build        - Build the binary"
+	@echo "  clean        - Clean build artifacts"
+	@echo "  run          - Build and run the application with optional flags:"
+	@echo "                   file=<path>   (Path to package.json, default: package.json)"
+	@echo "                   depth=<number> (Dependency resolution depth, default: 3)"
+	@echo "                   viz=1         (Generate graphviz DOT file)"
+	@echo "  deps         - Install dependencies"
+	@echo "  docker-build - Build the Docker image"
+	@echo "  docker-run   - Run the Docker container with optional flags:"
+	@echo "                   file=<path>   (Path to package.json, default: package.json)"
+	@echo "                   depth=<number> (Dependency resolution depth, default: 3)"
+	@echo "                   viz=1         (Generate graphviz DOT file)"
+	@echo "  docker-clean - Remove the depres Docker image"
+	@echo "  help         - Show this help message"
 	@echo "Examples:"
-	@echo "  make run file=./path/to/package.json depth=2 viz"
+	@echo "  make run file=./path/to/package.json depth=2 viz=1"
+	@echo "  make docker-run file=package-warning.json depth=5 viz=1"
