@@ -45,10 +45,11 @@ func (r *Resolver) GenReport() {
 
 	if len(sorted) == len(r.graph.Nodes) {
 		fmt.Println("   Valid installation order found:")
-		for i, packageID := range sorted {
-			if node, exists := r.graph.Nodes[packageID]; exists {
+		for i := len(sorted) - 1; i >= 0; i-- {
+			pkgId := sorted[i]
+			if node, exists := r.graph.Nodes[pkgId]; exists {
 				depthIndicator := strings.Repeat("  ", node.Depth)
-				fmt.Printf("   %2d. %s%s\n", i+1, depthIndicator, packageID)
+				fmt.Printf("   %2d. %s%s@%s\n", len(sorted)-i, depthIndicator, node.Name, node.Version)
 			}
 		}
 	} else {

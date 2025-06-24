@@ -96,17 +96,17 @@ func (r *Resolver) ResolveDeps(path string) error {
 		}
 
 		if err := r.resolveSinglePackage(item.Name, item.Constraint, item.Depth); err != nil {
-			if err.Error() != "already resolved" {
-				fmt.Printf("Error resolving %s: %v\n", item.Name, err)
-			}
+			fmt.Printf("Error resolving %s: %v\n", item.Name, err)
 		}
 	}
+
+	r.buildAdjList()
 
 	fmt.Println("Dependency resolution complete!")
 	return nil
 }
 
-func (r *Resolver) resolveSinglePackage(pkg, constraint string, depth int) error {
+func (r *Resolver) resolveSinglePackage(pkg, verConstraint string, depth int) error {
 	pkgInfo, err := r.registryClient.GetPkgInfo(pkg)
 	if err != nil {
 		fmt.Printf("%sPackage not found: %s\n", strings.Repeat("\t", depth), pkg)
@@ -125,11 +125,11 @@ func (r *Resolver) resolveSinglePackage(pkg, constraint string, depth int) error
 		return fmt.Errorf("no versions available for %s", pkg)
 	}
 
-	bestVer, err := version.FindBestVersion(availableVer, constraint)
+	bestVer, err := version.FindBestVersion(availableVer, verConstraint)
 	if err != nil || bestVer == "" {
-		fmt.Printf("%sVersion conflict: %s@%s\n", strings.Repeat("\t", depth), pkg, constraint)
-		r.graph.AddConflict(pkg, constraint, "", "No matching version")
-		return fmt.Errorf("no matching version for %s@%s", pkg, constraint)
+		fmt.Printf("%sVersion conflict: %s@%s\n", strings.Repeat("\t", depth), pkg, verConstraint)
+		r.graph.AddConflict(pkg, verConstraint, "", "No matching version")
+		return fmt.Errorf("no matching version for %s@%s", pkg, verConstraint)
 	}
 
 	// check for version conflicts with already resolved packages
@@ -140,38 +140,47 @@ func (r *Resolver) resolveSinglePackage(pkg, constraint string, depth int) error
 			r.graph.AddConflict(pkg, bestVer, existingVer, "Version mismatch")
 			return nil
 		}
-		// already resolved with same ver, skip
-		return nil
+		return nil // already resolved with same ver, skip
 	}
 
-	r.resolved[pkg] = bestVer //mark resolved
-	packageID := fmt.Sprintf("%s@%s", pkg, bestVer)
+	r.resolved[pkg] = bestVer
 
 	node := &graph.Node{ // add to graph
-		ID:      packageID,
+		ID:      pkg, // use name as ID
 		Name:    pkg,
 		Version: bestVer,
 		Depth:   depth,
 	}
-	r.graph.AddNode(packageID, node)
+	r.graph.AddNode(pkg, node)
 
 	// process deps of this package
 	if depth < r.maxDepth-1 {
 		if versionInfo, exists := pkgInfo.Versions[bestVer]; exists {
 			for depName, depConstraint := range versionInfo.Dependencies {
-				if depVersion, resolved := r.resolved[depName]; resolved {
-					depID := fmt.Sprintf("%s@%s", depName, depVersion)
-					r.graph.AddEdge(packageID, depID)
-				} else {
-					r.queue = append(r.queue, QueueItem{ // schedule for resolution
-						Name:       depName,
-						Constraint: depConstraint,
-						Depth:      depth + 1,
-					})
-				}
+				r.queue = append(r.queue, QueueItem{ // schedule for resolution
+					Name:       depName,
+					Constraint: depConstraint,
+					Depth:      depth + 1,
+				})
 			}
 		}
 	}
 
 	return nil
+}
+
+func (r *Resolver) buildAdjList() {
+	for pkg, ver := range r.resolved {
+		pkgInfo, err := r.registryClient.GetPkgInfo(pkg)
+		if err != nil {
+			continue
+		}
+		if versionInfo, exists := pkgInfo.Versions[ver]; exists {
+			for depName := range versionInfo.Dependencies {
+				if _, depResolved := r.resolved[depName]; depResolved {
+					r.graph.AddEdge(pkg, depName)
+				}
+			}
+		}
+	}
 }

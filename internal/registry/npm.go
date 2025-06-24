@@ -8,8 +8,8 @@ import (
 )
 
 const (
-	BASE_URL = "https://registry.npmjs.org/"
-	Timeout  = 10 * time.Second
+	BaseUrl = "https://registry.npmjs.org/"
+	Timeout = 10 * time.Second
 )
 
 type PackageInfo struct {
@@ -35,7 +35,7 @@ func New() *Client {
 }
 
 func (c *Client) GetPkgInfo(pkg string) (*PackageInfo, error) {
-	resp, err := c.httpClient.Get(fmt.Sprintf("%s%s", BASE_URL, pkg))
+	resp, err := c.httpClient.Get(fmt.Sprintf("%s%s", BaseUrl, pkg))
 
 	if err != nil {
 		return nil, fmt.Errorf("failed to get package info: %w", err)
