@@ -25,7 +25,8 @@ type QueueItem struct {
 type Resolver struct {
 	maxDepth       int
 	graph          *graph.Graph
-	resolved       map[string]string // pkg -> resolved_ver
+	resolved       map[string]string            // pkg -> resolved_ver
+	pendingEdges   map[string]map[string]string // pkg -> list of deps
 	queue          []QueueItem
 	registryClient *registry.Client
 }
@@ -35,6 +36,7 @@ func New(maxDepth int) *Resolver {
 		maxDepth:       maxDepth,
 		graph:          graph.NewGraph(),
 		resolved:       make(map[string]string),
+		pendingEdges:   make(map[string]map[string]string),
 		registryClient: registry.New(),
 	}
 }
@@ -100,8 +102,6 @@ func (r *Resolver) ResolveDeps(path string) error {
 		}
 	}
 
-	r.buildAdjList()
-
 	fmt.Println("Dependency resolution complete!")
 	return nil
 }
@@ -153,6 +153,35 @@ func (r *Resolver) resolveSinglePackage(pkg, verConstraint string, depth int) er
 	}
 	r.graph.AddNode(pkg, node)
 
+	if verInfo, exists := pkgInfo.Versions[bestVer]; exists {
+		if r.pendingEdges[pkg] == nil { // store deps for this pkg
+			r.pendingEdges[pkg] = make(map[string]string)
+		}
+
+		for depName := range verInfo.Dependencies { // only store 'deps', not 'devDeps'
+			r.pendingEdges[pkg][depName] = ""
+		}
+	}
+
+	if deps, exists := r.pendingEdges[pkg]; exists { // build edges FROM just resolved pkg TO its deps
+		for depName := range deps {
+			if _, depResolved := r.resolved[depName]; depResolved {
+				r.graph.AddEdge(pkg, depName)
+			}
+		}
+	}
+
+	for parentPkg, deps := range r.pendingEdges { // build edges FROM other pkgs TO just resolved pkg
+		if parentPkg == pkg {
+			continue
+		}
+		if _, exists := deps[pkg]; exists {
+			if _, parentResolved := r.resolved[parentPkg]; parentResolved {
+				r.graph.AddEdge(parentPkg, pkg)
+			}
+		}
+	}
+
 	// process deps of this package
 	if depth < r.maxDepth-1 {
 		if versionInfo, exists := pkgInfo.Versions[bestVer]; exists {
@@ -167,20 +196,4 @@ func (r *Resolver) resolveSinglePackage(pkg, verConstraint string, depth int) er
 	}
 
 	return nil
-}
-
-func (r *Resolver) buildAdjList() {
-	for pkg, ver := range r.resolved {
-		pkgInfo, err := r.registryClient.GetPkgInfo(pkg)
-		if err != nil {
-			continue
-		}
-		if versionInfo, exists := pkgInfo.Versions[ver]; exists {
-			for depName := range versionInfo.Dependencies {
-				if _, depResolved := r.resolved[depName]; depResolved {
-					r.graph.AddEdge(pkg, depName)
-				}
-			}
-		}
-	}
 }
