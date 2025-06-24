@@ -21,6 +21,12 @@ profile.cov
 bin/
 pkg/
 
+# GraphViz output
+*.dot
+*.svg
+*.png
+*.pdf
+
 # Editor
 .idea/
 .vscode/

@@ -1,6 +1,7 @@
 package resolver
 
 import (
+	"depRess/internal/visualizer"
 	"fmt"
 	"strings"
 )
@@ -57,4 +58,13 @@ func (r *Resolver) GenReport() {
 	}
 
 	fmt.Println(strings.Repeat("=", 60))
+}
+
+func (r *Resolver) GenViz() {
+	viz := visualizer.New(r.graph)
+	if err := viz.Generate(); err != nil {
+		fmt.Printf("Error generating visualization: %v\n", err)
+		return
+	}
+	fmt.Println("Graphviz .dot file generated successfully!")
 }

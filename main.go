@@ -11,6 +11,7 @@ import (
 func main() {
 	filePath := flag.String("file", "package.json", "Path to package.json file")
 	maxDepth := flag.Int("depth", 3, "Maximum dependency resolution depth (1-5)")
+	viz := flag.Bool("viz", false, "Generate graphviz DOT file for visualization")
 	help := flag.Bool("help", false, "Show help message")
 	flag.Parse()
 
@@ -42,6 +43,10 @@ func main() {
 	}
 
 	res.GenReport()
+
+	if *viz {
+		res.GenViz()
+	}
 }
 
 func demo() {
@@ -49,14 +54,20 @@ func demo() {
 	fmt.Println("\nUsage:")
 	fmt.Printf("  %s [flags]\n", os.Args[0])
 	fmt.Println("\nFlags:")
-	fmt.Println("\t-f string")
+	fmt.Println("\t-file string")
 	fmt.Println("\t\t\tPath to package.json file (default \"package.json\")")
-	fmt.Println("\t-d int")
+	fmt.Println("\t-depth int")
 	fmt.Println("\t\t\tMaximum dependency resolution depth (1-5) (default 3)")
-	fmt.Println("\t-h")
+	fmt.Println("\t-viz")
+	fmt.Println("\t\t\tGenerate graphviz DOT file for visualization")
+	fmt.Println("\t-help")
 	fmt.Println("\t\t\tShow this help message")
 	fmt.Println("\nExamples:")
 	fmt.Printf("  %s\n", os.Args[0])
-	fmt.Printf("  %s -f ./<path>/package.json\n", os.Args[0])
-	fmt.Printf("  %s -d 2 -f package.json\n", os.Args[0])
+	fmt.Printf("  %s -file ./<path>/package.json\n", os.Args[0])
+	fmt.Printf("  %s -depth 2 -file package.json -viz\n", os.Args[0])
+	fmt.Println("\nVisualization:")
+	fmt.Println("\tInstall: brew install graphviz")
+	fmt.Println("\tRender: dot -Tpng dependency_graph.dot -o graph.png")
+	fmt.Println("\tMore info: https://graphviz.org/doc/info/command.html")
 }
