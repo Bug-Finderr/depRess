@@ -146,7 +146,6 @@ func (r *Resolver) resolveSinglePackage(pkg, verConstraint string, depth int) er
 	r.resolved[pkg] = bestVer
 
 	node := &graph.Node{ // add to graph
-		ID:      pkg, // use name as ID
 		Name:    pkg,
 		Version: bestVer,
 		Depth:   depth,

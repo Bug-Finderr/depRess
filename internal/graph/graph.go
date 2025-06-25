@@ -3,7 +3,6 @@ package graph
 import "maps"
 
 type Node struct {
-	ID      string // package@version
 	Name    string
 	Version string
 	Depth   int
